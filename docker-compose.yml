@@ -17,6 +17,9 @@ services:
       - DB_NAME=devdb
       - DB_USER=devuser
       - DB_PASS=changeme
+      - EMAIL_HOST=etest4060@gmail.com
+      - EMAIL_HOST_PASSWORD=ennassgpjeahrdvd
+      - ADMIN_USER_EMAIL=emailtest119@yahoo.com
     depends_on:
       - db
 
