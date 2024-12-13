@@ -1,9 +1,20 @@
+import os
+import uuid
+from django.db import models
+
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager,
     PermissionsMixin,
 )
-from django.db import models
+
+
+def product_image_file_path(instance, filename):
+
+    ext = os.path.splitext(filename)[1]
+    filename = f"{uuid.uuid4()}{ext}"
+
+    return os.path.join("uploads", "products", filename)
 
 
 class UserManager(BaseUserManager):
@@ -41,3 +52,14 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
+
+
+class Product(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    price = models.DecimalField(max_digits=6, decimal_places=2)
+    quantity = models.IntegerField(null=True)
+    image = models.ImageField(null=True, upload_to=product_image_file_path)
+
+    def __str__(self):
+        return self.name

@@ -41,8 +41,10 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "core",
     "user",
+    "product",
     "rest_framework",
     "knox",
+    "drf_spectacular",
 ]
 
 REST_FRAMEWORK = {
@@ -130,7 +132,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/static/"
+MEDIA_URL = "/static/media/"
+
+MEDIA_ROOT = "/vol/web/media"
+STATIC_ROOT = "vol/web/static"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -156,3 +162,7 @@ EMAIL_HOST_PASSWORD = "ennassgpjeahrdvd"
 EMAIL_USE_SSL = True  # Use EMAIL_PORT 587 for TLS
 EMAIL_USE_TLS = False
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+REST_FRAMEWORK = {
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}

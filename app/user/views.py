@@ -22,6 +22,8 @@ def generate_otp():
 
 
 class Register(generics.GenericAPIView):
+    """Create user and send OTP to the email"""
+
     serializer_class = UserSerializer
 
     def post(self, request, *args, **kwargs):
