@@ -1,10 +1,12 @@
-from django.urls import path
-from product.views import ProductList, ProductDetail, Products
+from django.urls import path, include
+from product import views
+from rest_framework import routers
 
 
 app_name = "product"
-urlpatterns = [
-    path("product/", ProductList.as_view(), name="product_list"),
-    path("product/<int:pk>/", ProductDetail.as_view(), name="product_detail"),
-    path("products/", Products.as_view(), name="products"),
-]
+
+router = routers.SimpleRouter()
+router.register("admin-products", views.AdminProductViewSet)
+router.register("products", views.ProductViewSet)
+router.register("cart", views.CartItemViewSet)
+urlpatterns = [path("", include(router.urls))]

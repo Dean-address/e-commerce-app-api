@@ -40,3 +40,5 @@ class UserAdmin(BaseUserAdmin):
 
 admin.site.register(models.CustomUser, UserAdmin)
 admin.site.register(models.Product)
+admin.site.register(models.Cart)
+admin.site.register(models.CartItem)

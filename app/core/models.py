@@ -63,3 +63,23 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Cart(models.Model):
+    user = models.ForeignKey(
+        CustomUser, on_delete=models.CASCADE, null=True, blank=True
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user} Cart"
+
+
+class CartItem(models.Model):
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField()
+    added_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.cart} Items"
