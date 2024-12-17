@@ -14,6 +14,11 @@ from pathlib import Path
 import os
 from datetime import timedelta
 
+from rest_framework import serializers
+
+# import stripe
+
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -145,16 +150,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = "core.CustomUser"
 
-# Mail Configuration
-# EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-# EMAIL_HOST = "smtp.gmail.com"  # Replace with your SMTP host
-# EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")  # Your email address
-# EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")  # Your email password
-# EMAIL_PORT = 465  # SMTP port
-# EMAIL_USE_SSL = True  # Use SSL for secure connection
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-# EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.mail.yahoo.com"
 EMAIL_PORT = 465  # Recommended
 EMAIL_HOST_USER = "emailtest119@yahoo.com"
@@ -166,3 +163,17 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
+import app.auth_schemes
+
+SPECTACULAR_SETTINGS = {
+    "COMPONENT_SPLIT_REQUEST": True,
+    "SERVE_AUTHENTICATION": ["knox"],
+}
+SPECTACULAR_SETTINGS = {
+    "COMPONENT_SPLIT_REQUEST": True,
+}
+# STRIPE_PUBLISHABLE_KEY = "pk_test_51QVlE0BCCTDDglFRCg7Iu9EVcr5VgpvCz2inlvI6Q4eGe0MBeB6hnOEtQFqC6OBzjXio9fUSmwKHQ2PvzStRareH003QFC30Ms"
+# STRIPE_SECRET_KEY = "sk_test_51QVlE0BCCTDDglFR8GMd98J7II8S2RhvnREXlOieUYz1Bo6zTurPihLwOwHklLob0D1xvk4YOrb2QK8vLMxIXIUV00LAjKZrOw"
+
+
+# stripe.api_key = STRIPE_SECRET_KEY  # Use the secret key from your environment variables

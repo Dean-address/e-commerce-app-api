@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from core.models import CustomUser
+from core.models import CustomUser, Profile
 from django.contrib.auth import authenticate
 
 from django.utils.translation import gettext_lazy as _
@@ -12,11 +12,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = ["id", "email", "username", "password"]
-        extra_kwargs = {
-            "password": {
-                "write_only": True
-            }  # Ensure the password is not included in the response
-        }
+        extra_kwargs = {"password": {"write_only": True}}
 
     def create(self, validated_data):
         # Ensure the hashed password is saved
@@ -27,6 +23,10 @@ class UserSerializer(serializers.ModelSerializer):
         user.is_active = False
         user.save()
         return user
+
+
+# class ResendOTPSerializer(serializers.Serializer):
+#     email = serializers.E
 
 
 class OtpSerializer(serializers.Serializer):
@@ -60,3 +60,10 @@ class AuthTokenSerializer(serializers.Serializer):
 
         data["user"] = user
         return data
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = "__all__"
+        read_only_fields = ["user"]

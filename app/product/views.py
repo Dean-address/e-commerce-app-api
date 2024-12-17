@@ -1,8 +1,15 @@
-from core.models import Product, Cart, CartItem
-from product.serializers import ProductSerializer, CartSerializer, CartItemSerializer
+from core.models import Product, Cart, CartItem, Order, OrderItem
+from product.serializers import (
+    ProductSerializer,
+    CartSerializer,
+    CartItemSerializer,
+    OrderSerializer,
+    OrderItemSerializer,
+)
 from rest_framework import permissions, viewsets, mixins, status
 from rest_framework.response import Response
 from knox.auth import TokenAuthentication
+from django.db import transaction
 
 
 class AdminProductViewSet(
@@ -32,14 +39,8 @@ class ProductViewSet(
     permission_classes = [permissions.IsAuthenticated]
 
 
-# class CartViewSet(viewsets.ModelViewSet):
-#     queryset = Cart.objects.all()
-#     # serializer_class = CartSerializer
-#     # def retrieve
-
-
 class CartItemViewSet(viewsets.ModelViewSet):
-    """View to manage cart items"""
+    """View for authenticated user to manage carts"""
 
     queryset = CartItem.objects.all()
     serializer_class = CartItemSerializer
@@ -80,3 +81,56 @@ class CartItemViewSet(viewsets.ModelViewSet):
         serializer.is_valid()
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class CheckoutViewSet(viewsets.ModelViewSet):
+    """View for authenticated user to manage orders"""
+
+    queryset = Order.objects.none()
+    serializer_class = OrderSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        user = request.user
+
+        try:
+            cart = Cart.objects.get(user=user)
+            cartItem = CartItem.objects.filter(cart=cart)
+
+            if not cartItem.exists():
+                return Response(
+                    {"error": "Cart is empty"}, status=status.HTTP_400_BAD_REQUEST
+                )
+
+            with transaction.atomic():
+                total_price = sum(item.total_price for item in cartItem)
+                order = Order.objects.create(user=user, total_price=total_price)
+                for item in cartItem:
+                    OrderItem.objects.create(
+                        order=order,
+                        product=item.product,
+                        quantity=item.quantity,
+                        price=item.product.price,
+                    )
+                cartItem.delete()
+            serializer = OrderSerializer(order)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        except Cart.DoesNotExist:
+            return Response(
+                {"error": "Cart does not exist"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+
+class OrderViewSet(viewsets.ModelViewSet):
+    """Manage orders for a user"""
+
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = Order.objects.filter(user=user)
+        return queryset

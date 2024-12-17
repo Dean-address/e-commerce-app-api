@@ -2,17 +2,22 @@ from django.core.mail import send_mail
 from django.core.cache import cache
 from django.contrib.auth import get_user_model
 
-
-from core.models import CustomUser
-from user.serializers import UserSerializer, OtpSerializer, AuthTokenSerializer
+from core.models import CustomUser, Profile
+from user.serializers import (
+    UserSerializer,
+    OtpSerializer,
+    AuthTokenSerializer,
+    ProfileSerializer,
+)
 
 from knox.models import AuthToken
+from knox.auth import TokenAuthentication
+
 import pyotp
 
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 from rest_framework import permissions, generics, status
-from rest_framework.exceptions import AuthenticationFailed
 
 
 def generate_otp():
@@ -28,9 +33,11 @@ class Register(generics.GenericAPIView):
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
+
         if serializer.is_valid():
             email = request.data["email"]
             otp = generate_otp()
+
             try:
                 send_mail(
                     "Ecommerce OTP CODE",
@@ -44,10 +51,7 @@ class Register(generics.GenericAPIView):
             except Exception as e:
                 raise ValidationError({"email": f"Failed to send OTP: {str(e)}"})
             else:
-
                 user = serializer.save()
-                print(user.password)  # Check hashed password
-                print(user.check_password(request.data["password"]))
                 return Response(
                     {
                         "message": "OTP sent successfully. Please verify within 120 seconds.",
@@ -126,11 +130,39 @@ class Login(generics.GenericAPIView):
 class UserList(generics.ListAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
+    permission_classes = [permissions.IsAdminUser]
 
 
 class UserDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
+    permission_classes = [permissions.IsAdminUser]
+
+
+class ProfileDetail(generics.RetrieveUpdateAPIView):
+    queryset = Profile.objects.all()
+    serializer_class = ProfileSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
-        return self.request.user
+        user = self.request.user
+        queryset = Profile.objects.filter(user=user)
+        return queryset
+
+    def retrieve(self, request, *args, **kwargs):
+        profile, created = Profile.objects.get_or_create(user=request.user)
+        serializer = ProfileSerializer(profile)
+        return Response(serializer.data)
+
+    def update(self, request, *args, **kwargs):
+        profile = request.user.profile
+        print(request.user.profile)
+        serializer = ProfileSerializer(profile, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST,
+        )

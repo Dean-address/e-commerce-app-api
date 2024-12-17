@@ -1,9 +1,9 @@
 from django.apps import AppConfig
 
 
-class CoreConfig(AppConfig):
+class ProductConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
-    name = "core"
+    name = "user"
 
     def ready(self):
-        import app.auth_schemes
+        import user.signal
